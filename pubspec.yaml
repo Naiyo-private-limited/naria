@@ -64,25 +64,35 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
-  flutter_launcher_icons: "^0.14.1"
+  flutter_launcher_icons: "^0.14.0"
 
 flutter_launcher_icons:
-  android: "launcher_icon"
+  android: "adaptive"
   ios: true
-  image_path: "assets/images/nariiicon.jpeg"
-  min_sdk_android: 21 # android min sdk min:16, default 21
+  remove_alpha_ios: true
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#FFFFFF"  # Solid white background for Android
+  adaptive_icon_foreground: "assets/images/logo.png"  # Your actual icon
+  
+  min_sdk_android: 21  # Minimum Android SDK version
+  
   web:
     generate: true
-    image_path: "assets/images/nariiicon.jpeg"
-    background_color: "#0000FF"
-    theme_color: "#0000FF"
+    image_path: "assets/images/logo.png"
+    background_color: "#FFFFFF"  # Solid white background for the web
+    theme_color: "#FFFFFF"  # Solid white theme color for the web
+
   windows:
     generate: true
-    image_path: "assets/images/nariiicon.jpeg"
-    icon_size: 48 # min:48, max:256, default: 48
+    image_path: "assets/images/logo.png"
+    icon_size: 48  # min:48, max:256, default: 48
+
   macos:
     generate: true
-    image_path: "assets/images/nariiicon.jpeg"
+    image_path: "assets/images/logo.png"
+
+
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

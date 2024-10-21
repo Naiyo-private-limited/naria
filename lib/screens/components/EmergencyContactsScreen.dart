@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nari/bases/api/emergencyGet.dart';
+import 'package:nari/bases/api/emergencydetailsGet.dart';
 
 class EmergencyContactsWidget extends StatefulWidget {
   const EmergencyContactsWidget({Key? key}) : super(key: key);
@@ -10,7 +10,7 @@ class EmergencyContactsWidget extends StatefulWidget {
 }
 
 class _EmergencyContactsWidgetState extends State<EmergencyContactsWidget> {
-  List<String> emergencyContacts = [];
+  List<EmergencyContacts> emergencyContacts = [];
   bool isLoading = true;
   bool hasError = false;
 
@@ -22,7 +22,8 @@ class _EmergencyContactsWidgetState extends State<EmergencyContactsWidget> {
 
   Future<void> _loadEmergencyContacts() async {
     try {
-      List<String>? contacts = await EmergencyContactAPI().emergencyGet();
+      List<EmergencyContacts>? contacts =
+          await EmergencyContacts().emergencydetailsGet();
       if (contacts != null && contacts.isNotEmpty) {
         setState(() {
           emergencyContacts = contacts;
@@ -62,13 +63,21 @@ class _EmergencyContactsWidgetState extends State<EmergencyContactsWidget> {
                         child: CircleAvatar(
                           radius: 40,
                           backgroundColor: Colors.grey[400],
-                          child: Text(
-                            contact.substring(0, 2), // Initials or numbers
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                            ),
-                          ),
+                          backgroundImage: contact.photo != null
+                              ? NetworkImage(
+                                  contact.photo!) // Use photo if available
+                              : null,
+                          child: contact.photo == null
+                              ? Text(
+                                  contact.username != null
+                                      ? contact.username!.substring(0, 2)
+                                      : 'NA', // Show initials if username is available
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                  ),
+                                )
+                              : null,
                         ),
                       );
                     }).toList(),

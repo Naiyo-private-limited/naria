@@ -209,7 +209,7 @@ class _NewProfileScreenState extends State<NewProfileScreen> {
                 // Image at the bottom
                 Center(
                   child: Image.asset(
-                    'assets/images/nariii-removebg-preview.png', // Replace with your image path
+                    'assets/images/narii.png', // Replace with your image path
                     width: screenWidth * 0.8, // Adjust the width as needed
                   ),
                 ),

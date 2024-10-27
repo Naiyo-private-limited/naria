@@ -1,6 +1,5 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:nari/screens/chat_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:nari/screens/NewHomeScreen.dart';
 import 'package:nari/screens/NewLoginScreen.dart';
@@ -43,12 +42,12 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      // home: SplashScreen(
-      //   cameras: cameras ?? [], // Pass the cameras to the SplashScreen
-      // ),
-      home: ChatScreen(
-        chatId: 1,
+      home: SplashScreen(
+        cameras: cameras ?? [], // Pass the cameras to the SplashScreen
       ),
+      // home: ChatScreen(
+      //   chatId: 1,
+      // ),
     );
   }
 }

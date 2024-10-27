@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nari/bases/api/emergencydetailsGet.dart';
+import 'package:nari/screens/chatscreen.dart';
 
 class EmergencyContactsWidget extends StatefulWidget {
   const EmergencyContactsWidget({Key? key}) : super(key: key);
@@ -60,24 +61,39 @@ class _EmergencyContactsWidgetState extends State<EmergencyContactsWidget> {
                         .map((contact) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: CircleAvatar(
-                          radius: 40,
-                          backgroundColor: Colors.grey[400],
-                          backgroundImage: contact.photo != null
-                              ? NetworkImage(
-                                  contact.photo!) // Use photo if available
-                              : null,
-                          child: contact.photo == null
-                              ? Text(
-                                  contact.username != null
-                                      ? contact.username!.substring(0, 2)
-                                      : 'NA', // Show initials if username is available
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                  ),
-                                )
-                              : null,
+                        child: GestureDetector(
+                          onTap: () {
+                            print('Tapped on ${contact.id}');
+                            // Navigate to ChatScreen when the avatar is tapped
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatScreen(
+                                  userid: 1,
+                                  recieverid: contact.id ?? 0,
+                                ),
+                              ),
+                            );
+                          },
+                          child: CircleAvatar(
+                            radius: 40,
+                            backgroundColor: Colors.grey[400],
+                            backgroundImage: contact.photo != null
+                                ? NetworkImage(
+                                    contact.photo!) // Use photo if available
+                                : null,
+                            child: contact.photo == null
+                                ? Text(
+                                    contact.username != null
+                                        ? contact.username!.substring(0, 2)
+                                        : 'NA', // Show initials if username is available
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                    ),
+                                  )
+                                : null,
+                          ),
                         ),
                       );
                     }).toList(),

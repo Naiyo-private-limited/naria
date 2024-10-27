@@ -4,26 +4,49 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:nari/bases/api/ChatMessage.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
+import 'package:nari/bases/api/chatdirectGet.dart';
 
 class ChatScreen extends StatefulWidget {
+  final int userid;
+  final int recieverid;
+  const ChatScreen({Key? key, required this.userid, required this.recieverid})
+      : super(key: key);
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<ChatMessage> _messages = [];
+  List<ChatdirectAPI> _messages = [];
   final ImagePicker _picker = ImagePicker();
+  final ChatdirectAPI _chatAPI = ChatdirectAPI();
   bool _isEmojiVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchChatMessages();
+  }
+
+  Future<void> _fetchChatMessages() async {
+    try {
+      final messages = await ChatdirectAPI.getDirectMessages(
+          widget.userid, widget.recieverid);
+      if (messages != null) {
+        setState(() {
+          _messages = messages;
+        });
+      }
+    } catch (e) {
+      print("Failed to fetch chat messages: $e");
+    }
+  }
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
-      final message = ChatMessage(
-        senderId: "user123",
-        message: _controller.text,
-        imageUrl: "",
-        timestamp: DateTime.now(),
-        isMe: true,
+      final message = ChatdirectAPI(
+        content: _controller.text,
+        createdAt: DateTime.now().toString(),
       );
       setState(() {
         _messages.add(message);
@@ -35,12 +58,8 @@ class _ChatScreenState extends State<ChatScreen> {
   void _sendImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
-      final message = ChatMessage(
-        senderId: "user123",
-        message: "",
-        imageUrl: pickedFile.path,
-        timestamp: DateTime.now(),
-        isMe: true,
+      final message = ChatdirectAPI(
+        createdAt: DateTime.now().toString(),
       );
       setState(() {
         _messages.add(message);
@@ -61,60 +80,60 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Widget _buildMessage(ChatMessage message) {
+  Widget _buildMessage(ChatdirectAPI message) {
+    bool isMe = message.userId.toString() == widget.userid.toString();
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 2, horizontal: 6),
+      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
       child: Align(
-        alignment: message.isMe ? Alignment.centerRight : Alignment.centerLeft,
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
         child: ConstrainedBox(
           constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width * 0.75,
           ),
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            margin: EdgeInsets.only(bottom: 4),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            margin: const EdgeInsets.only(bottom: 4),
             decoration: BoxDecoration(
-              color: message.isMe ? Color(0xFFEFD611) : Color(0xFF343A40),
+              color: isMe
+                  ? const Color(
+                      0xFFEFD611) // Color for the current user's messages
+                  : const Color(
+                      0xFF343A40), // Color for the receiver's messages
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
+                topLeft: const Radius.circular(12),
+                topRight: const Radius.circular(12),
                 bottomLeft:
-                    message.isMe ? Radius.circular(12) : Radius.circular(0),
+                    isMe ? const Radius.circular(12) : const Radius.circular(0),
                 bottomRight:
-                    message.isMe ? Radius.circular(0) : Radius.circular(12),
+                    isMe ? const Radius.circular(0) : const Radius.circular(12),
               ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
                   spreadRadius: 1,
                   blurRadius: 6,
-                  offset: Offset(0, 2),
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
             child: Column(
-              crossAxisAlignment: message.isMe
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
+              crossAxisAlignment:
+                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
-                message.imageUrl.isEmpty
-                    ? Text(
-                        message.message,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: message.isMe ? Colors.black : Colors.white,
-                        ),
-                      )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.file(File(message.imageUrl)),
-                      ),
-                SizedBox(height: 4),
                 Text(
-                  DateFormat('h:mm a').format(message.timestamp),
+                  message.content ?? "",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: isMe ? Colors.black : Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  DateFormat('h:mm a')
+                      .format(DateTime.parse(message.createdAt ?? "")),
                   style: TextStyle(
                     fontSize: 10,
-                    color: message.isMe ? Colors.black54 : Colors.white54,
+                    color: isMe ? Colors.black54 : Colors.white54,
                   ),
                 ),
               ],
@@ -128,13 +147,12 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildMessageList() {
     return ListView.builder(
       reverse: true,
-      padding: EdgeInsets.symmetric(
-          vertical: 6), // Reduced padding for a cleaner look
+      padding: const EdgeInsets.symmetric(vertical: 6),
       itemCount: _messages.length,
       itemBuilder: (context, index) {
         bool showDateLabel = index == 0 ||
-            _messages[_messages.length - 1 - index].timestamp.day !=
-                _messages[_messages.length - index].timestamp.day;
+            _messages[_messages.length - 1 - index].createdAt !=
+                _messages[_messages.length - index].createdAt;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -143,9 +161,10 @@ class _ChatScreenState extends State<ChatScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Text(
-                  _getMessageDateLabel(
-                      _messages[_messages.length - 1 - index].timestamp),
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                  'Test',
+                  // _getMessageDateLabel(
+                  //     _messages[_messages.length - 1 - index].createdAt),
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ),
             _buildMessage(_messages[_messages.length - 1 - index]),
@@ -158,10 +177,16 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF2B2D33),
+      backgroundColor: const Color(0xFF2B2D33),
       appBar: AppBar(
-        backgroundColor: Color(0xFF1E2125),
-        title: Row(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        backgroundColor: const Color(0xFF1E2125),
+        title: const Row(
           children: [
             CircleAvatar(
               backgroundImage: AssetImage('assets/images/user_avatar.png'),
@@ -188,7 +213,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.more_vert, color: Colors.grey),
+            icon: const Icon(Icons.more_vert, color: Colors.grey),
             onPressed: () {},
           ),
         ],
@@ -221,15 +246,16 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Expanded(
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
-                  color: Color(0xFF343A40),
+                  color: const Color(0xFF343A40),
                 ),
                 child: Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.emoji_emotions, color: Colors.grey),
+                      icon:
+                          const Icon(Icons.emoji_emotions, color: Colors.grey),
                       onPressed: () {
                         setState(() {
                           _isEmojiVisible = !_isEmojiVisible;
@@ -239,39 +265,36 @@ class _ChatScreenState extends State<ChatScreen> {
                     Expanded(
                       child: TextField(
                         controller: _controller,
-                        style: TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
                           hintText: "Type a message...",
                           hintStyle: TextStyle(color: Colors.grey),
                           border: InputBorder.none,
                         ),
                         onChanged: (text) {
-                          setState(
-                              () {}); // Trigger rebuild to manage button appearance
+                          setState(() {});
                         },
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.attach_file, color: Colors.grey),
+                      icon: const Icon(Icons.attach_file, color: Colors.grey),
                       onPressed: _sendImage,
                     ),
                     IconButton(
-                      icon: Icon(Icons.camera_alt, color: Colors.grey),
+                      icon: const Icon(Icons.camera_alt, color: Colors.grey),
                       onPressed: _sendImage,
                     ),
                   ],
                 ),
               ),
             ),
-            SizedBox(
-                width:
-                    4), // Add a small gap between the input and the send button
+            const SizedBox(width: 4),
             _controller.text.isNotEmpty
                 ? IconButton(
-                    icon: Icon(Icons.send, color: Color(0xFFEFD611)),
+                    icon: const Icon(Icons.send, color: Color(0xFFEFD611)),
                     onPressed: _sendMessage,
                   )
-                : Container(), // Show the send button only when there is text
+                : Container(),
           ],
         ),
       ),

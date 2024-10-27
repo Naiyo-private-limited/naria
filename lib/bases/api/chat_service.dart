@@ -5,7 +5,7 @@ import 'package:nari/bases/model/message.dart';
 
 class ChatService {
   final String apiUrl =
-      'http://34.171.9.179:5000'; // Replace with your backend URL
+      'http://34.171.9.179:5000/api'; // Replace with your backend URL
 
   // Create a new chat
   Future<Chat?> createChat(

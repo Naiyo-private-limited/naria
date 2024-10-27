@@ -15,7 +15,7 @@ class ChatMessage {
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     return ChatMessage(
-      senderId: json['senderId'],
+      senderId: json['userId'],
       message: json['message'],
       imageUrl: json['imageUrl'] ?? '',
       timestamp: DateTime.parse(json['timestamp']),

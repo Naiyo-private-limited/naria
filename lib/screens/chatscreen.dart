@@ -1,6 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:location/location.dart';
 import 'package:nari/bases/api/ChatMessage.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
@@ -64,6 +69,55 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         _messages.add(message);
       });
+    }
+  }
+
+  Future<Location?> getLocation() async {
+    Location location = Location();
+
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
+
+    serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) {
+        return null;
+      }
+    }
+
+    permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        return null;
+      }
+    }
+
+    return location;
+  }
+
+  void _sendLiveLocation() async {
+    // get current location
+    final Location? location = await getLocation();
+    if (location != null) {
+      FlutterBackgroundService().invoke("setAsBackground");
+      location.enableBackgroundMode(enable: true);
+      location.onLocationChanged.listen((LocationData currentLocation) async {
+        // Use current location
+        final Uri locationUri =
+            Uri.parse('http://34.171.9.179:5000/api/loc/location');
+        final Response response = await post(locationUri, body: {
+          'userId': widget.userid.toString(),
+          'latitude': currentLocation.latitude.toString(),
+          'longitude': currentLocation.longitude.toString(),
+        });
+        log('Response status: ${response.statusCode}');
+        log('Response body: ${response.body}');
+      });
+    } else {
+      // snackbar to show error - Location Permission Denied
+      log('Location Permission Denied');
     }
   }
 
@@ -275,6 +329,11 @@ class _ChatScreenState extends State<ChatScreen> {
                           setState(() {});
                         },
                       ),
+                    ),
+                    // IconButton Location
+                    IconButton(
+                      icon: const Icon(Icons.location_on, color: Colors.grey),
+                      onPressed: _sendLiveLocation,
                     ),
                     IconButton(
                       icon: const Icon(Icons.attach_file, color: Colors.grey),

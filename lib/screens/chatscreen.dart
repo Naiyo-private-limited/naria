@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background/flutter_background.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -94,6 +95,9 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     }
 
+    // request for location all the time
+    location.changeSettings(accuracy: LocationAccuracy.high, interval: 1000);
+
     return location;
   }
 
@@ -103,19 +107,22 @@ class _ChatScreenState extends State<ChatScreen> {
     if (location != null) {
       location.enableBackgroundMode(enable: true);
       final String sessionId = "LOC${DateTime.now().millisecondsSinceEpoch}";
-      location.onLocationChanged.listen((LocationData currentLocation) async {
-        // Use current location
-        final Uri locationUri =
-            Uri.parse('http://34.171.9.179:5000/api/loc/location');
-        final Response response = await post(locationUri, body: {
-          'sessionId': sessionId,
-          'userId': widget.userid.toString(),
-          'latitude': currentLocation.latitude.toString(),
-          'longitude': currentLocation.longitude.toString(),
+      bool success = await FlutterBackground.enableBackgroundExecution();
+      if (success) {
+        location.onLocationChanged.listen((LocationData currentLocation) async {
+          // Use current location
+          final Uri locationUri =
+              Uri.parse('http://34.171.9.179:5000/api/loc/location');
+          final Response response = await post(locationUri, body: {
+            'sessionId': sessionId,
+            'userId': widget.userid.toString(),
+            'latitude': currentLocation.latitude.toString(),
+            'longitude': currentLocation.longitude.toString(),
+          });
+          log('Response status: ${response.statusCode}');
+          log('Response body: ${response.body}');
         });
-        log('Response status: ${response.statusCode}');
-        log('Response body: ${response.body}');
-      });
+      }
     } else {
       // snackbar to show error - Location Permission Denied
       log('Location Permission Denied');

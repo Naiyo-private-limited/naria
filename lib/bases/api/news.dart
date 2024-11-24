@@ -10,6 +10,7 @@ class NewsAPI {
   String? photo;
   String? createdAt;
   String? updatedAt;
+  String? categories;
   List<Comments>? comments;
 
   NewsAPI(
@@ -19,6 +20,7 @@ class NewsAPI {
       this.photo,
       this.createdAt,
       this.updatedAt,
+      this.categories,
       this.comments});
 
   NewsAPI.fromJson(Map<String, dynamic> json) {
@@ -28,6 +30,7 @@ class NewsAPI {
     photo = json['photo'];
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];
+    categories = json['categories'];
     if (json['Comments'] != null) {
       comments = <Comments>[];
       json['Comments'].forEach((v) {
@@ -44,6 +47,7 @@ class NewsAPI {
     data['photo'] = this.photo;
     data['createdAt'] = this.createdAt;
     data['updatedAt'] = this.updatedAt;
+    data['categories'] = this.categories;
     if (this.comments != null) {
       data['Comments'] = this.comments!.map((v) => v.toJson()).toList();
     }

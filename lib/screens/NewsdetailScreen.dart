@@ -176,7 +176,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                         color: Colors.white,
                       ),
                       child: const CircleAvatar(
-                        backgroundImage: AssetImage('assets/images/nari.png'),
+                        backgroundImage: AssetImage('assets/images/narii.png'),
                         radius: 20,
                       ),
                     ),

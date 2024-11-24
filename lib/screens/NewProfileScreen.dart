@@ -134,49 +134,49 @@ class _NewProfileScreenState extends State<NewProfileScreen> {
 
                 const SizedBox(height: 20),
 
-                // Emergency Contact Section
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  decoration: BoxDecoration(
-                    color:
-                        Colors.transparent, // Make the background transparent
-                    borderRadius: BorderRadius.circular(30), // Rounded edges
-                    border: Border.all(
-                      color: Colors.black, // Border color
-                      width: 2, // Border width
-                    ),
-                  ),
-                  child: const Text(
-                    "Liked Posts", // Corrected text to "Emergency Contact"
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black, // Text color matches the border
-                    ),
-                  ),
-                ),
+                // // Emergency Contact Section
+                // Container(
+                //   padding:
+                //       const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                //   decoration: BoxDecoration(
+                //     color:
+                //         Colors.transparent, // Make the background transparent
+                //     borderRadius: BorderRadius.circular(30), // Rounded edges
+                //     border: Border.all(
+                //       color: Colors.black, // Border color
+                //       width: 2, // Border width
+                //     ),
+                //   ),
+                //   child: const Text(
+                //     "Liked Posts", // Corrected text to "Emergency Contact"
+                //     style: TextStyle(
+                //       fontSize: 12,
+                //       color: Colors.black, // Text color matches the border
+                //     ),
+                //   ),
+                // ),
 
-                const SizedBox(height: 10),
+                // const SizedBox(height: 10),
 
-                // Scrollable images for Liked Posts
-                SizedBox(
-                  height: 100, // Set height for the images
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: List.generate(5, (index) {
-                      return Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        width: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[900],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.image, size: 50),
-                      );
-                    }),
-                  ),
-                ),
-                const SizedBox(height: 20),
+                // // Scrollable images for Liked Posts
+                // SizedBox(
+                //   height: 100, // Set height for the images
+                //   child: ListView(
+                //     scrollDirection: Axis.horizontal,
+                //     children: List.generate(5, (index) {
+                //       return Container(
+                //         margin: const EdgeInsets.only(right: 10),
+                //         width: 100,
+                //         decoration: BoxDecoration(
+                //           color: Colors.grey[900],
+                //           borderRadius: BorderRadius.circular(10),
+                //         ),
+                //         child: const Icon(Icons.image, size: 50),
+                //       );
+                //     }),
+                //   ),
+                // ),
+                // const SizedBox(height: 20),
 
                 // Emergency Contact Section
                 Container(
@@ -206,13 +206,13 @@ class _NewProfileScreenState extends State<NewProfileScreen> {
 
                 const SizedBox(height: 20),
 
-                // Image at the bottom
-                Center(
-                  child: Image.asset(
-                    'assets/images/narii.png', // Replace with your image path
-                    width: screenWidth * 0.8, // Adjust the width as needed
-                  ),
-                ),
+                // // Image at the bottom
+                // Center(
+                //   child: Image.asset(
+                //     'assets/images/narilogo.png', // Replace with your image path
+                //     width: screenWidth * 0.8, // Adjust the width as needed
+                //   ),
+                // ),
               ],
             ),
           ),

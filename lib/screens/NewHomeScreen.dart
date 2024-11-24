@@ -18,16 +18,6 @@ class NewHomeScreen extends StatefulWidget {
 }
 
 class _NewHomeScreenState extends State<NewHomeScreen> {
-  final List<String> categories = [
-    'Technology',
-    'Sports',
-    'Health',
-    'Business',
-    'Entertainment',
-    'Science',
-    'World',
-  ];
-
   final List<String> carouselImages = [
     'assets/images/britania.webp',
     'assets/images/britania.webp',
@@ -91,53 +81,8 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                       ),
                     ),
 
-                    // Horizontally scrollable category container
-                    SizedBox(
-                      height: 60, // Responsive height for categories
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: List.generate(categories.length, (index) {
-                            return Container(
-                              margin: EdgeInsets.only(
-                                left: index == 0
-                                    ? 16
-                                    : 5, // Add 16 margin to the first item
-                                right: index == categories.length - 1
-                                    ? 16
-                                    : 5, // Add 16 margin to the last item
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(30),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: Text(
-                                  categories[index],
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.grey[800],
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-                    ),
-
                     // News card widget
-                    NewsListPage()
+                    const NewsListPage()
                   ],
                 ),
               ),

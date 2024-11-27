@@ -74,6 +74,8 @@ class _EmergencyContactsWidgetState extends State<EmergencyContactsWidget> {
                                 builder: (context) => ChatScreen(
                                   userid: user?.id ?? 0,
                                   recieverid: contact.id ?? 0,
+                                  chatName: contact.username ?? 'NA',
+                                  chatImage: contact.photo ?? '',
                                 ),
                               ),
                             );

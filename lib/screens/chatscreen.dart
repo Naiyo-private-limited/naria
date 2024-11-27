@@ -15,8 +15,15 @@ import 'package:nari/bases/api/chatdirectGet.dart';
 class ChatScreen extends StatefulWidget {
   final int userid;
   final int recieverid;
-  const ChatScreen({Key? key, required this.userid, required this.recieverid})
-      : super(key: key);
+  final String chatName;
+  final String chatImage; // Add chatImage parameter
+  const ChatScreen({
+    Key? key,
+    required this.userid,
+    required this.recieverid,
+    required this.chatName,
+    required this.chatImage, // Add chatImage parameter
+  }) : super(key: key);
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
@@ -248,27 +255,28 @@ class _ChatScreenState extends State<ChatScreen> {
           },
         ),
         backgroundColor: const Color(0xFF1E2125),
-        title: const Row(
+        title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: AssetImage('assets/images/user_avatar.png'),
+              backgroundImage:
+                  NetworkImage(widget.chatImage), // Use chatImage parameter
               radius: 18,
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Chat Name",
-                  style: TextStyle(
+                  widget.chatName, // Use chatName parameter
+                  style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ),
-                Text(
-                  "Online",
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                ),
+                // const Text(
+                //   "Online",
+                //   style: TextStyle(fontSize: 14, color: Colors.grey),
+                // ),
               ],
             ),
           ],

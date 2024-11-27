@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:nari/bases/UserProvider.dart';
 import 'package:nari/bases/api/emergencydetailsGet.dart';
+import 'package:nari/bases/api/login.dart';
 import 'package:nari/screens/chatscreen.dart';
 
 class EmergencyContactsWidget extends StatefulWidget {
@@ -62,14 +64,15 @@ class _EmergencyContactsWidgetState extends State<EmergencyContactsWidget> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: GestureDetector(
-                          onTap: () {
+                          onTap: () async {
                             print('Tapped on ${contact.id}');
+                            User? user = await UserProvider().getUser();
                             // Navigate to ChatScreen when the avatar is tapped
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ChatScreen(
-                                  userid: 1,
+                                  userid: user?.id ?? 0,
                                   recieverid: contact.id ?? 0,
                                 ),
                               ),

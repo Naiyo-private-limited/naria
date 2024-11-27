@@ -36,6 +36,16 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  // Load user data from local storage
+  Future<User?> getUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userData = prefs.getString('user');
+    if (userData != null) {
+      return User.fromJson(jsonDecode(userData));
+    }
+    return null;
+  }
+
   /// Check if user data exists in local storage
   Future<bool> hasUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

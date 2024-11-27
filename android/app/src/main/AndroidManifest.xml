@@ -34,8 +34,12 @@
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyBccl1u-2O7R8iAk6nCKDFC3WGQZV3LXU0" />
         <meta-data android:name="flutterEmbedding" android:value="2" />
+        <service android:name="com.pravera.flutter_background.service.BackgroundService"
+         android:exported="true"
+         android:permission="android.permission.BIND_JOB_SERVICE" />
+
     </application>
-    <!-- Required to query activities that can process text, see:
+    <!-- Required to query activities that can process text, see:x
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
 
@@ -50,5 +54,5 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-    <uses-sdk android:minSdkVersion="33" android:targetSdkVersion="33" />
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="33" />
 </manifest>

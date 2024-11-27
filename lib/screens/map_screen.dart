@@ -1,14 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+// import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:firebase_database/firebase_database.dart'; // For Firebase Realtime Database
-import 'package:firebase_core/firebase_core.dart'; // To initialize Firebase
-import 'package:firebase_auth/firebase_auth.dart'; // For Firebase Authentication
+// For Firebase Authentication
 
 class UberMapScreen extends StatefulWidget {
   const UberMapScreen({super.key});
@@ -18,13 +16,13 @@ class UberMapScreen extends StatefulWidget {
 }
 
 class _UberMapScreenState extends State<UberMapScreen> {
-  late GoogleMapController mapController;
-  LatLng _initialPosition =
-      const LatLng(40.7128, -74.0060); // New York coordinates (default)
+  // late GoogleMapController mapController;
+  // LatLng _initialPosition =
+  //     const LatLng(40.7128, -74.0060); // New York coordinates (default)
   bool _isMapReady = false;
   bool _locationPermissionGranted = false;
-  Set<Marker> _markers = {}; // To store markers for nearby services
-  DatabaseReference? _locationRef; // Firebase database reference
+  // Set<Marker> _markers = {}; // To store markers for nearby services
+  // DatabaseReference? _locationRef; // Firebase database reference
   Stream<Position>? _positionStream;
 
   @override
@@ -36,8 +34,8 @@ class _UberMapScreenState extends State<UberMapScreen> {
 
   // Initialize Firebase Realtime Database
   Future<void> _initializeFirebaseDatabase() async {
-    await Firebase.initializeApp();
-    _locationRef = FirebaseDatabase.instance.ref().child('live_location');
+    // await Firebase.initializeApp();
+    // _locationRef = FirebaseDatabase.instance.ref().child('live_location');
   }
 
   Future<void> _checkLocationPermission() async {
@@ -67,7 +65,7 @@ class _UberMapScreenState extends State<UberMapScreen> {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
     setState(() {
-      _initialPosition = LatLng(position.latitude, position.longitude);
+      // _initialPosition = LatLng(position.latitude, position.longitude);
     });
 
     _positionStream = Geolocator.getPositionStream(
@@ -77,7 +75,7 @@ class _UberMapScreenState extends State<UberMapScreen> {
     _positionStream?.listen((Position position) {
       _updateLocationInFirebase(position); // Update position in Firebase
       setState(() {
-        _initialPosition = LatLng(position.latitude, position.longitude);
+        // _initialPosition = LatLng(position.latitude, position.longitude);
       });
       _moveCameraToLocation();
     });
@@ -85,88 +83,88 @@ class _UberMapScreenState extends State<UberMapScreen> {
 
 // Update user's live location in Firebase
   Future<void> _updateLocationInFirebase(Position position) async {
-    User? user = FirebaseAuth.instance.currentUser; // Get the current user
-    if (user != null) {
-      String userId = user.uid; // Get user's UID
-      _locationRef?.child(userId).set({
-        'latitude': position.latitude,
-        'longitude': position.longitude,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-      });
-    } else {
-      print("User not authenticated.");
-    }
+    // User? user = FirebaseAuth.instance.currentUser; // Get the current user
+    // if (user != null) {
+    //   String userId = user.uid; // Get user's UID
+    //   _locationRef?.child(userId).set({
+    //     'latitude': position.latitude,
+    //     'longitude': position.longitude,
+    //     'timestamp': DateTime.now().millisecondsSinceEpoch,
+    //   });
+    // } else {
+    //   print("User not authenticated.");
+    // }
   }
 
   void _moveCameraToLocation() {
     if (_isMapReady) {
-      mapController.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: _initialPosition, zoom: 15.0),
-        ),
-      );
+      // mapController.animateCamera(
+      //   CameraUpdate.newCameraPosition(
+      //     CameraPosition(target: _initialPosition, zoom: 15.0),
+      // ),
+      // );
     }
   }
 
 // Share live location link
-  Future<void> _shareLiveLocation() async {
-    User? user = FirebaseAuth.instance.currentUser; // Get the current user
-    if (user != null) {
-      String userId = user.uid; // Get user's UID
-      final String liveLocationUrl =
-          'https://nariii-default-rtdb.firebaseio.com/live_location/$userId.json';
+//   Future<void> _shareLiveLocation() async {
+//     // User? user = FirebaseAuth.instance.currentUser; // Get the current user
+//     if (user != null) {
+//       String userId = user.uid; // Get user's UID
+//       final String liveLocationUrl =
+//           'https://nariii-default-rtdb.firebaseio.com/live_location/$userId.json';
 
-      final String message = '''
-🚩 *Check out my live location!*
+//       final String message = '''
+// 🚩 *Check out my live location!* ̰
 
-Company: **NARIII**
+// Company: **NARIII**
 
-Live Location: $liveLocationUrl
+// Live Location: $liveLocationUrl
 
-''';
+// ''';
 
-      try {
-        await Share.share(
-          message,
-          subject: 'Shared Live Location from Your Company',
-        );
-      } catch (e) {
-        print('Error sharing location: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not share the location')),
-        );
-      }
-    } else {
-      print("User not authenticated.");
-    }
-  }
+//       try {
+//         await Share.share(
+//           message,
+//           subject: 'Shared Live Location from Your Company',
+//         );
+//       } catch (e) {
+//         print('Error sharing location: $e');
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           const SnackBar(content: Text('Could not share the location')),
+//         );
+//       }
+//     } else {
+//       print("User not authenticated.");
+//     }
+//   }
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-    setState(() {
-      _isMapReady = true;
-    });
-  }
+  // void _onMapCreated(GoogleMapController controller) {
+  //   mapController = controller;
+  //   setState(() {
+  //     _isMapReady = true;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          _locationPermissionGranted
-              ? GoogleMap(
-                  onMapCreated: _onMapCreated,
-                  initialCameraPosition: CameraPosition(
-                    target: _initialPosition,
-                    zoom: 15.0,
-                  ),
-                  zoomControlsEnabled: false,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: false,
-                  mapType: MapType.normal,
-                  markers: _markers,
-                )
-              : const Center(child: Text('Requesting Location Permission...')),
+          // _locationPermissionGranted
+          // ? GoogleMap(
+          //     onMapCreated: _onMapCreated,
+          //     initialCameraPosition: CameraPosition(
+          //       target: _initialPosition,
+          //       zoom: 15.0,
+          //     ),
+          //     zoomControlsEnabled: false,
+          //     myLocationEnabled: true,
+          //     myLocationButtonEnabled: false,
+          //     mapType: MapType.normal,
+          //     markers: _markers,
+          //   )
+          // : const Center(child: Text('Requesting Location Permission...')),
 
           // Floating button for current location
           Positioned(

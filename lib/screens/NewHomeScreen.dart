@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nari/bases/Appthemes.dart';
 import 'package:nari/screens/NewsdetailScreen.dart';
 import 'package:nari/screens/SOSScreen.dart';
+import 'package:nari/screens/components/ModernFormModal.dart';
 import 'package:nari/screens/components/NewsListPage.dart';
 import 'package:nari/screens/components/TopSectionWidget.dart';
 import 'package:nari/screens/components/news_card.dart';
@@ -134,6 +135,40 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppThemes.bg2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        onPressed: () {
+          _showAnimatedModal(context);
+        },
+        child: Icon(Icons.add, size: 28, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  void _showAnimatedModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          builder: (_, controller) {
+            return ModernFormModal(
+              onPost: () {
+                Navigator.pop(context); // Close modal
+                // Handle the post action
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

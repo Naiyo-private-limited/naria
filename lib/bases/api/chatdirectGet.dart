@@ -74,6 +74,35 @@ class ChatdirectAPI {
       throw e;
     }
   }
+
+  // Send a message to a user
+  static Future<bool> sendDirectMessage(int senderId, int receiverId, String message) async {
+    try {
+      final Uri url = Uri.parse("${Webservice.rootURL}/api/messages/send");
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+            'senderId': senderId,
+            'recipientIds': [receiverId],
+            'content': message,
+            'isGroupChat': false
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        // Handle non-200 response
+        throw Exception(
+            'Failed to send message. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error from API: $e");
+      rethrow;
+    }
+  }
 }
 
 class Sender {

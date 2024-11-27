@@ -60,11 +60,16 @@ class _ChatScreenState extends State<ChatScreen> {
       final message = ChatdirectAPI(
         content: _controller.text,
         createdAt: DateTime.now().toString(),
+        userId: widget.userid,
       );
+      // Empty the text field
+      _controller.clear();
       setState(() {
         _messages.add(message);
-        _controller.clear();
       });
+      // Send message to the API
+      ChatdirectAPI.sendDirectMessage(
+          widget.userid, widget.recieverid, message.content ?? "");
     }
   }
 

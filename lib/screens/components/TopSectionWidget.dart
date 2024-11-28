@@ -98,24 +98,24 @@ class _TopSectionWidgetState extends State<TopSectionWidget> {
                     ),
                     const SizedBox(width: 8),
                     // Column(
-                      // crossAxisAlignment: CrossAxisAlignment.start,
-                      // children: [
-                        Text(
-                          userName, // User name
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[800],
-                            fontSize: 14,
-                          ),
-                        ),
-                        // Text(
-                        //   isPremium,
-                        //   style: TextStyle(
-                        //     fontSize: 12,
-                        //     color: Colors.grey[600],
-                        //   ),
-                        // ),
-                      // ],
+                    // crossAxisAlignment: CrossAxisAlignment.start,
+                    // children: [
+                    Text(
+                      userName, // User name
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[800],
+                        fontSize: 14,
+                      ),
+                    ),
+                    // Text(
+                    //   isPremium,
+                    //   style: TextStyle(
+                    //     fontSize: 12,
+                    //     color: Colors.grey[600],
+                    //   ),
+                    // ),
+                    // ],
                     // ),
                     const SizedBox(width: 8),
                   ],

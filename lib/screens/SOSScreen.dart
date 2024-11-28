@@ -19,7 +19,8 @@ class SOSScreen extends StatefulWidget {
 class _SOSScreenState extends State<SOSScreen> {
   CameraController? rearCameraController;
   bool isRecording = false;
-  XFile? recordedVideo; // This will store the recorded video file
+  XFile? recordedVideo;
+  String errorMessage = "";
 
   @override
   void initState() {
@@ -30,33 +31,47 @@ class _SOSScreenState extends State<SOSScreen> {
   Future<void> requestCameraPermission() async {
     var status = await Permission.camera.status;
     if (!status.isGranted) {
-      await Permission.camera.request();
+      status = await Permission.camera.request();
     }
-    initializeCameraAndStartRecording();
+
+    if (status.isGranted) {
+      initializeCameraAndStartRecording();
+    } else {
+      setState(() {
+        errorMessage =
+            "Camera permission denied. Please enable it in settings.";
+      });
+    }
   }
 
   Future<void> initializeCameraAndStartRecording() async {
-    CameraDescription? rearCamera;
+    try {
+      CameraDescription? rearCamera;
 
-    for (var camera in widget.cameras) {
-      if (camera.lensDirection == CameraLensDirection.back) {
-        rearCamera = camera;
+      for (var camera in widget.cameras) {
+        if (camera.lensDirection == CameraLensDirection.back) {
+          rearCamera = camera;
+        }
       }
+
+      if (rearCamera != null) {
+        rearCameraController = CameraController(
+          rearCamera,
+          ResolutionPreset.high,
+          enableAudio: true,
+        );
+        await rearCameraController!.initialize();
+        startRecording();
+      } else {
+        setState(() {
+          errorMessage = "Rear camera not available.";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = "Error initializing camera: $e";
+      });
     }
-
-    if (rearCamera != null) {
-      rearCameraController = CameraController(
-        rearCamera!,
-        ResolutionPreset.high,
-        enableAudio: true,
-      );
-      await rearCameraController!.initialize();
-
-      // Start recording when initialized
-      startRecording();
-    }
-
-    setState(() {});
   }
 
   Future<void> startRecording() async {
@@ -64,13 +79,14 @@ class _SOSScreenState extends State<SOSScreen> {
       if (rearCameraController != null &&
           !rearCameraController!.value.isRecordingVideo) {
         await rearCameraController!.startVideoRecording();
-
         setState(() {
           isRecording = true;
         });
       }
     } catch (e) {
-      print("Error starting video recording: $e");
+      setState(() {
+        errorMessage = "Error starting video recording: $e";
+      });
     }
   }
 
@@ -78,11 +94,9 @@ class _SOSScreenState extends State<SOSScreen> {
     try {
       if (rearCameraController != null &&
           rearCameraController!.value.isRecordingVideo) {
-        // Get the XFile from the stopVideoRecording() result
         recordedVideo = await rearCameraController!.stopVideoRecording();
 
         if (recordedVideo != null) {
-          // Upload the video after recording
           await uploadVideo(File(recordedVideo!.path));
         }
       }
@@ -91,7 +105,9 @@ class _SOSScreenState extends State<SOSScreen> {
         isRecording = false;
       });
     } catch (e) {
-      print("Error stopping video recording: $e");
+      setState(() {
+        errorMessage = "Error stopping video recording: $e";
+      });
     }
   }
 
@@ -105,23 +121,34 @@ class _SOSScreenState extends State<SOSScreen> {
           videoFile,
         );
 
-        // Show success Snackbar
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Video uploaded successfully!'),
           backgroundColor: Colors.green,
         ));
+      } else {
+        setState(() {
+          errorMessage = "User ID not found. Please log in again.";
+        });
       }
     } catch (e) {
-      print('Failed to upload video: $e');
+      setState(() {
+        errorMessage = "Failed to upload video: $e";
+      });
     }
   }
 
   Future<String> getUserId() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userData = prefs.getString('user');
-    if (userData != null) {
-      var user = jsonDecode(userData);
-      return user['id'].toString();
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? userData = prefs.getString('user');
+      if (userData != null) {
+        var user = jsonDecode(userData);
+        return user['id'].toString();
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = "Error retrieving user ID: $e";
+      });
     }
     return "";
   }
@@ -134,24 +161,31 @@ class _SOSScreenState extends State<SOSScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (rearCameraController == null) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: Column(
           children: [
-            Expanded(
-              child: rearCameraController != null &&
-                      rearCameraController!.value.isInitialized
-                  ? CameraPreview(rearCameraController!)
-                  : Center(child: Text("Rear Camera Not Available")),
-            ),
+            if (rearCameraController == null ||
+                !rearCameraController!.value.isInitialized)
+              Expanded(
+                child: Center(
+                  child: errorMessage.isNotEmpty
+                      ? Text(
+                          errorMessage,
+                          style: TextStyle(color: Colors.red, fontSize: 16),
+                          textAlign: TextAlign.center,
+                        )
+                      : CircularProgressIndicator(),
+                ),
+              )
+            else
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20.0),
+                  child: CameraPreview(rearCameraController!),
+                ),
+              ),
             SizedBox(height: 20),
             _buildStopButton(),
             SizedBox(height: 20),
@@ -169,13 +203,17 @@ class _SOSScreenState extends State<SOSScreen> {
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(vertical: 15.0),
           backgroundColor: Colors.red,
+          disabledBackgroundColor: Colors.grey.shade400,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(50),
           ),
         ),
-        child: Text(
-          "Stop and Upload",
-          style: TextStyle(fontSize: 18),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            isRecording ? "Stop and Upload" : "Recording Stopped",
+            style: TextStyle(fontSize: 18, color: Colors.white),
+          ),
         ),
       ),
     );

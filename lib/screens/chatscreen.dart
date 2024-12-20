@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_background/flutter_background.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 import 'package:nari/bases/api/ChatMessage.dart';
 import 'package:nari/bases/api/chatdirectGet.dart';
@@ -114,30 +114,35 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _sendLiveLocation() async {
-    // get current location
     final Location? location = await getLocation();
     if (location != null) {
-      location.enableBackgroundMode(enable: true);
+      final service = FlutterBackgroundService();
       final String sessionId = "LOC${DateTime.now().millisecondsSinceEpoch}";
-      bool success = await FlutterBackground.enableBackgroundExecution();
-      if (success) {
-        location.onLocationChanged.listen((LocationData currentLocation) async {
-          // Use current location
-          final Uri locationUri =
-              Uri.parse('http://34.171.9.179:5000/api/loc/location');
-          final Response response = await post(locationUri, body: {
-            'sessionId': sessionId,
-            'userId': widget.userid.toString(),
-            'latitude': currentLocation.latitude.toString(),
-            'longitude': currentLocation.longitude.toString(),
-          });
-          log('Response status: ${response.statusCode}');
-          log('Response body: ${response.body}');
+      
+      // Start the background service
+      await service.startService();
+      
+      location.onLocationChanged.listen((LocationData currentLocation) async {
+        // Use current location
+        final Uri locationUri = Uri.parse('http://34.171.9.179:5000/api/loc/location');
+        final Response response = await post(locationUri, body: {
+          'sessionId': sessionId,
+          'userId': widget.userid.toString(),
+          'latitude': currentLocation.latitude.toString(),
+          'longitude': currentLocation.longitude.toString(),
         });
-      }
+        log('Response status: ${response.statusCode}');
+        log('Response body: ${response.body}');
+      });
+      
+      // Show a snackbar to indicate location sharing started
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Live location sharing started')),
+      );
     } else {
-      // snackbar to show error - Location Permission Denied
-      log('Location Permission Denied');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location permission denied')),
+      );
     }
   }
 

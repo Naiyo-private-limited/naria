@@ -3,15 +3,9 @@ import 'dart:ui' as ui;
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:nari/bases/Appthemes.dart';
-import 'package:nari/bases/UserProvider.dart';
-import 'package:nari/bases/api/login.dart';
-import 'package:nari/screens/NewHomescreen.dart';
-import 'package:nari/screens/components/CustomNotification.dart';
 import 'package:nari/screens/components/LoginModal.dart';
 import 'package:nari/screens/components/RegisterModal.dart';
-import 'package:provider/provider.dart';
 
 class NewLoginScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -165,18 +159,22 @@ class CustomShapePainter extends CustomPainter {
           Rect.fromLTWH(30, 40, size.width - 60, 500),
           const Radius.circular(50))) // Hollow rounded square
 
-      // Funnel shape path with inward curves
+      // Adjusted funnel shape measurements
       ..moveTo((size.width / 2) - 40, 540) // Top-left of the funnel
-      ..quadraticBezierTo((size.width / 2) - 10, 600, (size.width / 2) - 20,
-          630) // Left inward curve
-      ..lineTo((size.width / 2) + 20, 630) // Bottom of the funnel (narrower)
-      ..quadraticBezierTo((size.width / 2) + 10, 600, (size.width / 2) + 40,
-          540) // Right inward curve
+      ..quadraticBezierTo(
+          (size.width / 2) - 10, 590, 
+          (size.width / 2) - 20, 620
+      ) // Left inward curve
+      ..lineTo((size.width / 2) + 20, 620) // Bottom of the funnel (narrower)
+      ..quadraticBezierTo(
+          (size.width / 2) + 10, 590,
+          (size.width / 2) + 40, 540
+      ) // Right inward curve
       ..close(); // Close the path to form a funnel
 
-    // Hollow rounded rectangle below the funnel
+    // Adjusted bottom rectangle position and size
     hollowShapes.addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(30, 630, size.width - 60, 120),
+        Rect.fromLTWH(30, 620, size.width - 60, 140),  // Adjusted y-position and height
         const Radius.circular(50)));
 
     // Step 1: Draw the white background for the entire canvas

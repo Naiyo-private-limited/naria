@@ -59,32 +59,40 @@ class _NewProfileScreenState extends State<NewProfileScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          userProfile != null
-                              ? "Hi ${userProfile!.username},"
-                              : "Hi,",
-                          style: TextStyle(
-                            fontSize: 40,
-                            color: Colors.grey[800],
-                          ),
-                        ),
+                        userProfile != null
+                            ? Text(
+                                "Hi ${userProfile!.username},",
+                                style: TextStyle(
+                                  fontSize: userProfile!.username!.length > 15 ? 20 : 30,
+                                  color: Colors.grey[800],
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                maxLines: 1,
+                              )
+                            : Text(
+                                "Hi,",
+                                style: TextStyle(
+                                  fontSize: 40,
+                                  color: Colors.grey[800],
+                                ),
+                              ),
                         Row(
                           children: [
-                            CircleAvatar(
-                              backgroundColor: Colors.white,
-                              child: IconButton(
-                                icon: Icon(Icons.map, color: Colors.grey[500]),
-                                onPressed: () {
-                                  // Add your onPressed functionality
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => UberMapScreen(),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
+                            // CircleAvatar(
+                            //   backgroundColor: Colors.white,
+                            //   child: IconButton(
+                            //     icon: Icon(Icons.map, color: Colors.grey[500]),
+                            //     onPressed: () {
+                            //       // Add your onPressed functionality
+                            //       Navigator.push(
+                            //         context,
+                            //         MaterialPageRoute(
+                            //           builder: (context) => UberMapScreen(),
+                            //         ),
+                            //       );
+                            //     },
+                            //   ),
+                            // ),
                             const SizedBox(width: 10),
                             CircleAvatar(
                               backgroundColor: Colors.white,

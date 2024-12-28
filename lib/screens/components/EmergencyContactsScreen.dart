@@ -3,6 +3,7 @@ import 'package:nari/bases/UserProvider.dart';
 import 'package:nari/bases/api/emergencydetailsGet.dart';
 import 'package:nari/bases/api/login.dart';
 import 'package:nari/screens/chatscreen.dart';
+import '../../bases/api/emergencycontactPost.dart';
 
 class EmergencyContactsWidget extends StatefulWidget {
   const EmergencyContactsWidget({Key? key}) : super(key: key);
@@ -13,107 +14,151 @@ class EmergencyContactsWidget extends StatefulWidget {
 }
 
 class _EmergencyContactsWidgetState extends State<EmergencyContactsWidget> {
-  List<EmergencyContacts> emergencyContacts = [];
+  List<EmergencyContacts>? contacts;
   bool isLoading = true;
-  bool hasError = false;
+  final TextEditingController _emailController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadEmergencyContacts();
+    loadContacts();
   }
 
-  Future<void> _loadEmergencyContacts() async {
+  Future<void> loadContacts() async {
     try {
-      List<EmergencyContacts>? contacts =
-          await EmergencyContacts().emergencydetailsGet();
-      if (contacts != null && contacts.isNotEmpty) {
-        setState(() {
-          emergencyContacts = contacts;
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          hasError = true;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
+      final contactsList = await EmergencyContacts().emergencydetailsGet();
       setState(() {
-        hasError = true;
+        contacts = contactsList;
         isLoading = false;
       });
-      print('Error fetching emergency contacts: $e');
+    } catch (e) {
+      setState(() {
+        contacts = [];
+        isLoading = false;
+      });
     }
+  }
+
+  Future<void> _showAddContactDialog() async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Add Emergency Contact'),
+        content: TextField(
+          controller: _emailController,
+          decoration: InputDecoration(
+            hintText: 'Enter email address',
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.emailAddress,
+        ),
+        actions: [
+          TextButton(
+            child: Text('Cancel'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          ElevatedButton(
+            child: Text('Add'),
+            onPressed: () async {
+              try {
+                String contactId = await EmergencyContactPost.addEmergencyContact(
+                  1, 
+                  _emailController.text
+                );
+                Navigator.pop(context);
+                await loadContacts(); // Reload all contacts to get updated list
+                _emailController.clear();
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Contact added successfully'))
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to add contact'))
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : hasError
-            ? const Center(child: Text('Failed to load emergency contacts.'))
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Display the emergency contacts as avatars
-                  Row(
-                    children: emergencyContacts
-                        .take(3) // Display only the first 3 contacts
-                        .map((contact) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: GestureDetector(
-                          onTap: () async {
-                            print('Tapped on ${contact.id}');
-                            User? user = await UserProvider().getUser();
-                            // Navigate to ChatScreen when the avatar is tapped
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChatScreen(
-                                  userid: user?.id ?? 0,
-                                  recieverid: contact.id ?? 0,
-                                  chatName: contact.username ?? 'NA',
-                                  chatImage: contact.photo ?? '',
-                                ),
-                              ),
-                            );
-                          },
-                          child: CircleAvatar(
-                            radius: 40,
-                            backgroundColor: Colors.grey[400],
-                            backgroundImage: contact.photo != null
-                                ? NetworkImage(
-                                    contact.photo!) // Use photo if available
-                                : null,
-                            child: contact.photo == null
-                                ? Text(
-                                    contact.username != null
-                                        ? contact.username!.substring(0, 2)
-                                        : 'NA', // Show initials if username is available
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                    ),
-                                  )
-                                : null,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  // Add button
-                  CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: IconButton(
-                      icon: const Icon(Icons.add, color: Colors.black),
-                      onPressed: () {
-                        // Add your onPressed functionality here
-                      },
-                    ),
-                  ),
-                ],
-              );
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (contacts?.isEmpty ?? true) {
+      return Center(
+        child: Column(
+          children: [
+            Text(
+              'No emergency contacts added yet',
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton.icon(
+              icon: Icon(Icons.add),
+              label: Text('Add Emergency Contact'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              onPressed: _showAddContactDialog,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: contacts!.length,
+          itemBuilder: (context, index) {
+            final contact = contacts![index];
+            return Card(
+              elevation: 2,
+              margin: EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: contact.photo != null 
+                    ? NetworkImage(contact.photo!)
+                    : null,
+                  child: contact.photo == null 
+                    ? Icon(Icons.person)
+                    : null,
+                ),
+                title: Text(contact.username ?? 'Unknown'),
+                subtitle: Text(contact.email ?? ''),
+              ),
+            );
+          },
+        ),
+        SizedBox(height: 16),
+        ElevatedButton.icon(
+          icon: Icon(Icons.add),
+          label: Text('Add More'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.black,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          ),
+          onPressed: _showAddContactDialog,
+        ),
+      ],
+    );
   }
 }

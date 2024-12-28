@@ -1,7 +1,5 @@
 class Webservice {
-  // static const String rootURL = "http://192.168.29.166:5000";
-  static const String rootURL = "http://34.171.9.179:5000";
-  // static const String rootURL = "http://192.168.50.227:5000";
+  static const String rootURL = "http://34.171.112.122:5000";
   static const String register = "api/auth/register";
   static const String login = "api/auth/login";
   static const String videoupload = "api/videos/upload";

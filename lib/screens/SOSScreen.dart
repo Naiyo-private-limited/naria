@@ -6,6 +6,7 @@ import 'package:nari/bases/api/videoUpload.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/cupertino.dart';
 
 class SOSScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -16,16 +17,29 @@ class SOSScreen extends StatefulWidget {
   _SOSScreenState createState() => _SOSScreenState();
 }
 
-class _SOSScreenState extends State<SOSScreen> {
+class _SOSScreenState extends State<SOSScreen> with WidgetsBindingObserver {
   CameraController? rearCameraController;
   bool isRecording = false;
   XFile? recordedVideo;
   String errorMessage = "";
+  bool isUploading = false;
 
   @override
   void initState() {
     super.initState();
-    requestCameraPermission();
+    WidgetsBinding.instance.addObserver(this);
+    _initializeCamera();
+  }
+
+  Future<void> _initializeCamera() async {
+    await requestCameraPermission();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _initializeCamera();
+    }
   }
 
   Future<void> requestCameraPermission() async {
@@ -91,6 +105,10 @@ class _SOSScreenState extends State<SOSScreen> {
   }
 
   Future<void> stopRecordingAndUpload() async {
+    setState(() {
+      isUploading = true;
+    });
+    
     try {
       if (rearCameraController != null &&
           rearCameraController!.value.isRecordingVideo) {
@@ -98,14 +116,17 @@ class _SOSScreenState extends State<SOSScreen> {
 
         if (recordedVideo != null) {
           await uploadVideo(File(recordedVideo!.path));
+          _showSuccessDialog();
         }
       }
 
       setState(() {
         isRecording = false;
+        isUploading = false;
       });
     } catch (e) {
       setState(() {
+        isUploading = false;
         errorMessage = "Error stopping video recording: $e";
       });
     }
@@ -153,6 +174,24 @@ class _SOSScreenState extends State<SOSScreen> {
     return "";
   }
 
+  void _showSuccessDialog() {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: Text('Success'),
+          content: Text('Your emergency video has been uploaded successfully.'),
+          actions: [
+            CupertinoDialogAction(
+              child: Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     rearCameraController?.dispose();
@@ -166,55 +205,117 @@ class _SOSScreenState extends State<SOSScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            _buildHeader(),
             if (rearCameraController == null ||
                 !rearCameraController!.value.isInitialized)
-              Expanded(
-                child: Center(
-                  child: errorMessage.isNotEmpty
-                      ? Text(
-                          errorMessage,
-                          style: TextStyle(color: Colors.red, fontSize: 16),
-                          textAlign: TextAlign.center,
-                        )
-                      : CircularProgressIndicator(),
-                ),
-              )
+              _buildLoadingOrError()
             else
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20.0),
-                  child: CameraPreview(rearCameraController!),
-                ),
-              ),
-            SizedBox(height: 20),
-            _buildStopButton(),
-            SizedBox(height: 20),
+              _buildCameraPreview(),
+            _buildControls(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStopButton() {
+  Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: ElevatedButton(
-        onPressed: isRecording ? stopRecordingAndUpload : null,
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: 15.0),
-          backgroundColor: Colors.red,
-          disabledBackgroundColor: Colors.grey.shade400,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(50),
-          ),
+      padding: const EdgeInsets.all(16.0),
+      child: Text(
+        'Emergency Recording',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            isRecording ? "Stop and Upload" : "Recording Stopped",
-            style: TextStyle(fontSize: 18, color: Colors.white),
-          ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingOrError() {
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.circular(20),
         ),
+        margin: EdgeInsets.symmetric(horizontal: 16),
+        child: Center(
+          child: errorMessage.isNotEmpty
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(CupertinoIcons.exclamationmark_circle,
+                        color: Colors.red, size: 48),
+                    SizedBox(height: 16),
+                    Text(
+                      errorMessage,
+                      style: TextStyle(color: Colors.red, fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                )
+              : CupertinoActivityIndicator(radius: 20),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCameraPreview() {
+    return Expanded(
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white24, width: 2),
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: CameraPreview(rearCameraController!),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildControls() {
+    return Container(
+      padding: EdgeInsets.all(24),
+      child: Column(
+        children: [
+          if (isUploading)
+            Column(
+              children: [
+                CupertinoActivityIndicator(radius: 15),
+                SizedBox(height: 16),
+                Text(
+                  'Uploading video...',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+          SizedBox(height: 16),
+          CupertinoButton(
+            onPressed: isRecording ? stopRecordingAndUpload : null,
+            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            color: isRecording ? Colors.red : Colors.grey.shade800,
+            borderRadius: BorderRadius.circular(30),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isRecording ? CupertinoIcons.stop_fill : CupertinoIcons.circle_fill,
+                  color: Colors.white,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  isRecording ? "Stop Recording" : "Recording Stopped",
+                  style: TextStyle(fontSize: 18),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

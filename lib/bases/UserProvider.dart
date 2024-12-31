@@ -62,4 +62,9 @@ class UserProvider with ChangeNotifier {
 
     notifyListeners();
   }
+
+  /// Get user ID from current user
+  int? getUserId() {
+    return _user?.id;
+  }
 }

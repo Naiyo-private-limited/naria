@@ -8,6 +8,7 @@ import 'package:nari/screens/components/ModernFormModal.dart';
 import 'package:nari/screens/components/NewsListPage.dart';
 import 'package:nari/screens/components/TopSectionWidget.dart';
 import 'package:nari/screens/components/news_card.dart';
+import 'package:nari/class/SideMenu.dart';
 
 class NewHomeScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -37,9 +38,21 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[300], // Subtle background color
+      drawer: const SideMenu(),
       body: SafeArea(
         child: Stack(
           children: [
+            // Add menu button at the top
+            Positioned(
+              left: 16,
+              top: 16,
+              child: IconButton(
+                icon: Icon(Icons.menu, color: AppThemes.bg2),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              ),
+            ),
             // Scrollable content below the fixed header
             SingleChildScrollView(
               child: Padding(

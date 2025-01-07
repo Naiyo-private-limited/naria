@@ -1,29 +1,36 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:nari/bases/Webservices.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EmergencyContactPost {
-  static Future<String> addEmergencyContact(int userId, String email) async {
+  static Future<String> addEmergencyContact(String email) async {
     try {
-      final Uri url = Uri.parse("${Webservice.rootURL}/users/$userId/emergency-contacts");
-      
       final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('${Webservice.rootURL}/emergency-contacts'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${await getAuthToken()}',
+        },
         body: jsonEncode({
-          "email": email
-        })
+          'email': email,
+        }),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseData = jsonDecode(response.body);
-        return responseData['emergencyContacts'][0]; // Return the contact ID
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['id'] ?? '';
       } else {
-        throw Exception('Failed to add emergency contact: ${response.statusCode}');
+        throw Exception('Failed to add contact: ${response.statusCode}');
       }
     } catch (e) {
-      print("Error adding emergency contact: $e");
-      throw e;
+      throw Exception('Error adding contact: $e');
     }
+  }
+
+  static Future<String> getAuthToken() async {
+    // Get token from shared preferences or wherever it's stored
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token') ?? '';
   }
 }

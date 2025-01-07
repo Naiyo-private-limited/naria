@@ -1,8 +1,5 @@
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:nari/bases/Appthemes.dart';
 import 'package:nari/screens/components/LoginModal.dart';
 import 'package:nari/screens/components/RegisterModal.dart';
@@ -16,189 +13,164 @@ class NewLoginScreen extends StatefulWidget {
 }
 
 class _NewLoginScreenState extends State<NewLoginScreen> {
-  @override
   final TextEditingController emailController = TextEditingController();
-
   final TextEditingController passwordController = TextEditingController();
 
-  // void _showLoginModal(BuildContext context) {
+  @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background image
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/bg2.png', // Replace with your image asset
-              fit: BoxFit.fitWidth,
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white,
+              Colors.grey[50]!,
+            ],
           ),
-          // Custom shape with image inside hollow areas
-          FutureBuilder<ui.Image>(
-            future: _loadImage('assets/images/bg3.png'),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done &&
-                  snapshot.hasData) {
-                return CustomPaint(
-                  size:
-                      Size(double.infinity, MediaQuery.of(context).size.height),
-                  painter: CustomShapePainter(snapshot.data!),
-                );
-              } else {
-                // Show a loading indicator or nothing until the image is loaded
-                return const SizedBox.shrink();
-              }
-            },
+          image: DecorationImage(
+            image: AssetImage('assets/images/bg5.png'),
+            opacity: 0.4,
+            fit: BoxFit.cover,
           ),
-          // Positioned Login Button on the bottom rectangle
-          Positioned(
-            left: 30,
-            right: 30,
-            bottom: MediaQuery.of(context).size.height *
-                0.17, // Adjust to position inside the bottom rectangle
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  // Show login modal when button is pressed
-                  LoginModal.showLoginModal(context, widget.cameras);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 25),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(40),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              const Spacer(),
+              // iOS-style Logo Container with subtle shadow
+              Center(
+                child: Container(
+                  width: size.width * 0.3,
+                  height: size.width * 0.3,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/nariiicon.jpeg'),
+                      fit: BoxFit.cover,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
                 ),
-                child: Text(
-                  "Let's Start",
-                  style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.grey[800]), // Login button text style
+              ),
+              const Spacer(),
+              
+              const Spacer(),
+              // Social Login Buttons
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: size.width * 0.1),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildSocialButton(context, 'G', Colors.red),
+                    _buildSocialButton(context, 'f', Colors.blue),
+                    _buildSocialButton(context, 'in', Colors.blue[900]!),
+                  ],
                 ),
               ),
-            ),
-          ),
-          // Positioned "Don't have an account?" text and Register button below everything
-          Positioned(
-            bottom: 20,
-            left: 30,
-            right: 30,
-            child: Center(
-              child: Row(
+              SizedBox(height: size.height * 0.03),
+              // iOS-style Login Button with clean modern design
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: size.width * 0.1),
+                child: ElevatedButton(
+                  onPressed: () => LoginModal.showLoginModal(context, widget.cameras),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppThemes.bg2,
+                    minimumSize: Size(double.infinity, size.height * 0.06),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                    shadowColor: Colors.transparent,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.login_rounded, color: Colors.white),
+                      SizedBox(width: 10),
+                      Text(
+                        "Let's Start",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: size.height * 0.02),
+              // Simplified Register Section with modern typography
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "Don't have account?",
+                  Text(
+                    "Don't have an account?",
                     style: TextStyle(
                       color: Colors.black54,
-                      fontSize: 16,
+                      fontSize: size.width * 0.04,
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      // Handle register action
-                    },
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Show login modal when button is pressed
-                        RegisterModal.showRegisterModal(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppThemes.bg2,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                              20), // Rounded button corners
-                        ),
-                      ),
-                      child: const Text(
-                        'Register Now',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white, // Register button text color
-                        ),
+                    onPressed: () => RegisterModal.showRegisterModal(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                    ),
+                    child: Text(
+                      'Register Now',
+                      style: TextStyle(
+                        fontSize: size.width * 0.04,
+                        fontWeight: FontWeight.w600,
+                        color: AppThemes.bg2,
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
+              SizedBox(height: size.height * 0.03),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  // Function to load image as a Future
-  Future<ui.Image> _loadImage(String asset) async {
-    final ByteData data = await rootBundle.load(asset);
-    final ui.Codec codec =
-        await ui.instantiateImageCodec(data.buffer.asUint8List());
-    final ui.FrameInfo frame = await codec.getNextFrame();
-    return frame.image;
-  }
-}
-
-class CustomShapePainter extends CustomPainter {
-  final ui.Image image;
-
-  CustomShapePainter(this.image);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Define the paint for the solid white background (outside hollow shapes)
-    final backgroundPaint = Paint()
-      ..color = Colors.grey[200]!
-      ..style = PaintingStyle.fill;
-
-    // Create a combined path for the hollow shapes
-    final hollowShapes = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-          Rect.fromLTWH(30, 40, size.width - 60, 500),
-          const Radius.circular(50))) // Hollow rounded square
-
-      // Adjusted funnel shape measurements
-      ..moveTo((size.width / 2) - 40, 540) // Top-left of the funnel
-      ..quadraticBezierTo(
-          (size.width / 2) - 10, 590, 
-          (size.width / 2) - 20, 620
-      ) // Left inward curve
-      ..lineTo((size.width / 2) + 20, 620) // Bottom of the funnel (narrower)
-      ..quadraticBezierTo(
-          (size.width / 2) + 10, 590,
-          (size.width / 2) + 40, 540
-      ) // Right inward curve
-      ..close(); // Close the path to form a funnel
-
-    // Adjusted bottom rectangle position and size
-    hollowShapes.addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(30, 620, size.width - 60, 140),  // Adjusted y-position and height
-        const Radius.circular(50)));
-
-    // Step 1: Draw the white background for the entire canvas
-    canvas.drawRect(
-        Rect.fromLTWH(0, 0, size.width, size.height), backgroundPaint);
-
-    // Step 2: Clip the canvas to the hollow shapes and draw the background image inside them
-    canvas.saveLayer(Rect.fromLTWH(0, 0, size.width, size.height), Paint());
-    canvas.clipPath(hollowShapes);
-
-    // Draw the image within the hollow shapes
-    paintImage(
-      canvas: canvas,
-      image: image,
-      rect: Rect.fromLTWH(0, 0, size.width, size.height),
-      fit: BoxFit.cover,
+  Widget _buildSocialButton(BuildContext context, String text, Color color) {
+    return InkWell(
+      onTap: () {},
+      child: Container(
+        padding: EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.2),
+              blurRadius: 12,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+      ),
     );
-
-    // Restore the canvas after clipping
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
   }
 }

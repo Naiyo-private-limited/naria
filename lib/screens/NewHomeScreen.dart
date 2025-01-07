@@ -7,8 +7,8 @@ import 'package:nari/screens/SOSScreen.dart';
 import 'package:nari/screens/components/ModernFormModal.dart';
 import 'package:nari/screens/components/NewsListPage.dart';
 import 'package:nari/screens/components/TopSectionWidget.dart';
+import 'package:nari/screens/components/emergency_contact_form.dart';
 import 'package:nari/screens/components/news_card.dart';
-import 'package:nari/class/SideMenu.dart';
 
 class NewHomeScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -30,6 +30,8 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
   double yPos = 600.0;
   bool isDragging = false;
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     // Get device screen size for responsive layout
@@ -37,19 +39,19 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.grey[300], // Subtle background color
-      drawer: const SideMenu(),
       body: SafeArea(
         child: Stack(
           children: [
-            // Add menu button at the top
+            // Replace existing menu button with this
             Positioned(
               left: 16,
               top: 16,
               child: IconButton(
                 icon: Icon(Icons.menu, color: AppThemes.bg2),
                 onPressed: () {
-                  Scaffold.of(context).openDrawer();
+                  _scaffoldKey.currentState?.openDrawer();
                 },
               ),
             ),
@@ -168,18 +170,37 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          minChildSize: 0.4,
-          maxChildSize: 0.9,
-          builder: (_, controller) {
-            return ModernFormModal(
-              onPost: () {
-                Navigator.pop(context); // Close modal
-                // Handle the post action
-              },
-            );
-          },
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.5,
+            maxChildSize: 0.9,
+            builder: (_, controller) {
+              return EmergencyContactForm(
+                onSubmit: (contactData) async {
+                  try {
+                    // TODO: Replace with your actual API endpoint
+                    // final response = await http.post(
+                    //   Uri.parse('your-api-endpoint'),
+                    //   body: contactData,
+                    // );
+                    
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Contact saved successfully')),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
+                  }
+                },
+              );
+            },
+          ),
         );
       },
     );

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:nari/bases/api/profile.dart';
+import 'package:nari/screens/NewLoginScreen.dart';
 import 'package:nari/screens/components/EmergencyContactsScreen.dart';
 import 'package:nari/screens/components/video_list_widget.dart';
 import 'package:nari/screens/map_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:nari/bases/UserProvider.dart';
 
 class NewProfileScreen extends StatefulWidget {
   const NewProfileScreen({super.key});
@@ -39,6 +42,16 @@ class _NewProfileScreenState extends State<NewProfileScreen> {
     }
   }
 
+  void _handleLogout() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.clearUser();
+    // Navigate to login screen and clear all previous routes
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const NewLoginScreen(cameras: [],)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -63,7 +76,9 @@ class _NewProfileScreenState extends State<NewProfileScreen> {
                             ? Text(
                                 "Hi ${userProfile!.username},",
                                 style: TextStyle(
-                                  fontSize: userProfile!.username!.length > 15 ? 20 : 30,
+                                  fontSize: userProfile!.username!.length > 15
+                                      ? 20
+                                      : 30,
                                   color: Colors.grey[800],
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -212,15 +227,41 @@ class _NewProfileScreenState extends State<NewProfileScreen> {
 
                 const VideoListWidget(), // Use the reusable video list widget here
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 40),
 
-                // // Image at the bottom
-                // Center(
-                //   child: Image.asset(
-                //     'assets/images/narilogo.png', // Replace with your image path
-                //     width: screenWidth * 0.8, // Adjust the width as needed
-                //   ),
-                // ),
+                // Logout Button
+                Center(
+                  child: Container(
+                    width: screenWidth * 0.8,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _handleLogout,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade400,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        elevation: 5,
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.logout_rounded, size: 24),
+                          SizedBox(width: 8),
+                          Text(
+                            'Logout',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
               ],
             ),
           ),
